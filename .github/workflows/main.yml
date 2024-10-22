@@ -1,0 +1,179 @@
+name: CI
+
+on: [pull_request, push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-docker:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - container: wpilib/ubuntu-base:22.04
+            artifact-name: Linux
+            build-options: -Pplatform=x64-linux
+
+    name: "Build - ${{ matrix.artifact-name }}"
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+      - name: Build with CMake
+        run: |
+          cmake -B build -S .
+          sudo cmake --build build --parallel $(nproc)
+      - run: ./gradlew publish ${{ matrix.build-options }}
+        name: Build with Gradle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: gradleDir/outputs/
+
+  build-windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - artifact-name: WinArm64
+            tool-arch: amd64_arm64
+            build-options: -Pplatform=arm64-windows
+          - artifact-name: Win64
+            tool-arch: amd64
+            build-options: -Pplatform=x64-windows
+
+    name: "Build - ${{ matrix.artifact-name }}"
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+      - uses: ilammy/msvc-dev-cmd@v1.13.0
+        with:
+          arch: ${{ matrix.tool-arch }}
+      - name: Build with CMake
+        run: |
+          cmake -B build -S .
+          sudo cmake --build build --parallel $(nproc)
+      - run: ./gradlew publish ${{ matrix.build-options }}
+        name: Build with Gradle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: gradleDir/outputs/
+
+  build-mac:
+    name: "Build - macOS"
+    runs-on: macOS-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+      - run: brew install cmake ninja
+        name: install ninja
+      - name: Build with CMake
+        run: |
+          cmake -B build -S .
+          sudo cmake --build build --parallel $(nproc)
+      - run: ./gradlew publish -Pplatform=x64-osx
+        name: Build with Gradle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macOS
+          path: gradleDir/outputs/
+
+  build-mac-arm:
+    name: "Build - macOS (Arm)"
+    runs-on: macOS-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+      - run: brew install cmake ninja
+        name: install ninja
+      - name: Build with CMake
+        run: |
+          cmake -B build -S .
+          sudo cmake --build build --parallel $(nproc)
+      - run: ./gradlew publish -Pplatform=arm64-osx
+        name: Build with Gradle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macOSArm
+          path: gradleDir/outputs/
+
+  make_universal:
+    name: Make Universal
+    needs: [build-mac, build-mac-arm]
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: macOS
+          path: build/downloads
+      - uses: actions/download-artifact@v4
+        with:
+          name: macOSArm
+          path: build/downloads
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'zulu'
+      - run: ./gradlew copyToUpload -Prunmerge
+        name: Build with Gradle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macOSUniversal
+          path: build/toUpload/
+
+  combine:
+    name: Combine
+    needs: [build-docker, build-windows, make_universal]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: wpilibsuite/build-tools
+      - uses: actions/download-artifact@v4
+        with:
+          path: combiner/products/build/allOutputs
+      - name: Flatten Artifacts
+        run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
+      - name: Combine
+        if: |
+          !startsWith(github.ref, 'refs/tags/v')
+        run: ./gradlew publish -Pthirdparty
+        working-directory: combiner
+      - name: Combine (Release)
+        if: |
+          github.repository_owner == 'wpilibsuite' &&
+          startsWith(github.ref, 'refs/tags/v')
+        run: |
+          ./gradlew publish -Pthirdparty
+        working-directory: combiner
+        env:
+          RUN_AZURE_ARTIFACTORY_RELEASE: 'TRUE'
+          ARTIFACTORY_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Maven
+          path: ~/releases

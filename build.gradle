@@ -1,0 +1,5 @@
+if (project.hasProperty('runmerge')) {
+    apply from: 'merge.gradle'
+} else {
+    apply from: 'publish.gradle'
+}

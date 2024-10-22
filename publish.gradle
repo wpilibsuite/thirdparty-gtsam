@@ -1,0 +1,188 @@
+import java.security.MessageDigest
+import org.gradle.internal.os.OperatingSystem
+
+import java.nio.file.Files
+import java.nio.file.Paths
+
+apply plugin: 'maven-publish'
+
+configurations {
+    archives
+}
+
+publishing {
+    repositories {
+        maven {
+            url "${System.getProperty('user.home')}/releases/maven/development"
+        }
+        maven {
+            url "${System.getProperty('user.home')}/releases/maven/release"
+        }
+    }
+}
+
+def getTriplet() {
+    def fileNameFinder = new FileNameFinder()
+    for (File folder : file("$projectDir/vcpkg_installed").listFiles()) {
+        if (folder.name == project.platform) {
+            println folder.name
+            return folder.name
+        }
+    }
+    throw new RuntimeException("Platform not found");
+}
+
+
+def getPlatformPath(triplet) {
+    if (triplet == "arm32-linux") {
+        return "linux/arm32"
+    } else if (triplet == "arm64-linux") {
+        return "linux/arm64"
+    } else if (triplet == "x64-linux") {
+        return "linux/x86-64"
+    } else if (triplet == "x64-osx") {
+        return "osx/x86-64"
+    } else if (triplet == "arm64-osx") {
+        return "osx/arm64"
+    } else if (triplet == "x64-windows") {
+        return "windows/x86-64"
+    } else if (triplet == "arm64-windows") {
+        return "windows/arm64"
+    } else {
+        return ""
+    }
+}
+
+ext.triplet = getTriplet()
+ext.platformPath = getPlatformPath(ext.triplet)
+ext.platformClassifier = ext.platformPath.replaceFirst('/', '')
+
+ext.repo = "thirdparty-gtsam"
+
+def triplet = getTriplet()
+
+def pubVersion = "2.2-1"
+
+def outputsFolder = file("$project.buildDir/outputs")
+
+def baseArtifactId = 'gtsam'
+def artifactGroupId = 'edu.wpi.first.thirdparty.frc2024.gtsam'
+def zipBaseName = '_GROUP_edu_wpi_first_thirdparty_frc2024_gtsam_ID_gtsam-cpp_CLS'
+
+def versionFile = file("$outputsFolder/version.txt")
+def licenseFile = file("LICENSE.md")
+
+def outputClassifierStatic = project.ext.platformClassifier + 'static'
+def outputClassifierDebugStatic = project.ext.platformClassifier + 'debug/static'
+System.out.println(triplet)
+
+
+task copyAllOutputs(type: Copy) {
+    destinationDir = outputsFolder
+}
+
+ext.addTaskToCopyAllOutputs = { task ->
+    copyAllOutputs.dependsOn task
+    copyAllOutputs.inputs.file task.archiveFile
+    copyAllOutputs.from task.archiveFile
+}
+
+task outputVersions() {
+    description = 'Prints the versions of this to a file for use by the downstream packaging project'
+    group = 'Build'
+    outputs.files(versionFile)
+
+    doFirst {
+        buildDir.mkdir()
+        outputsFolder.mkdir()
+    }
+
+    doLast {
+        versionFile.write pubVersion
+    }
+}
+
+task cppHeadersZip(type: Zip) {
+    dependsOn outputVersions
+    destinationDirectory = outputsFolder
+    archiveBaseName = zipBaseName
+    archiveClassifier = "headers"
+
+    from(licenseFile) {
+        into '/'
+    }
+    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("vcpkg_installed").resolve(triplet).resolve("include")
+    from(resolvedDir.toFile()) {
+        into '/include'
+        include '**/*.hpp', '**/*.h'
+    }
+
+    includeEmptyDirs = false
+}
+
+task cppLibsZipStatic(type: Zip) {
+    destinationDirectory = outputsFolder
+    archiveClassifier = outputClassifierStatic
+    archiveBaseName = zipBaseName
+    duplicatesStrategy = 'exclude'
+
+    from(licenseFile) {
+        into '/'
+    }
+    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("vcpkg_installed").resolve(triplet).resolve("lib")
+    from(resolvedDir.toFile()) {
+        into project.platformPath + '/static'
+        exclude '**/pkgconfig'
+        include '**/*.a'
+        include '**/*.lib'
+        include '**/*.pdb'
+    }
+}
+
+task cppLibsZipStaticDebug(type: Zip) {
+    destinationDirectory = outputsFolder
+    archiveClassifier = outputClassifierStatic + 'debug'
+    archiveBaseName = zipBaseName + 'debug'
+    duplicatesStrategy = 'exclude'
+
+    from(licenseFile) {
+        into '/'
+    }
+    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("vcpkg_installed").resolve(triplet).resolve("debug").resolve("lib")
+    from(resolvedDir.toFile()) {
+        into project.platformPath + '/static'
+        exclude '**/pkgconfig'
+        include '**/*.a'
+        include '**/*.lib'
+        include '**/*.pdb'
+    }
+}
+
+if (!project.hasProperty('skipRelease')) {
+    addTaskToCopyAllOutputs(cppLibsZipStatic)
+}
+
+if (!project.hasProperty('skipDebug')) {
+    addTaskToCopyAllOutputs(cppLibsZipStaticDebug)
+}
+
+model {
+    publishing {
+        publications {
+            cpp(MavenPublication) {
+                artifact cppHeadersZip
+                artifact cppLibsZipStatic
+                artifact cppLibsZipStaticDebug
+
+                artifactId = "${baseArtifactId}-cpp"
+                groupId artifactGroupId
+                version pubVersion
+            }
+        }
+        repositories {
+            maven {
+                url "${System.getProperty('user.home')}/releases/maven/${project.repo}"
+            }
+        }
+    }
+}
