@@ -21,18 +21,6 @@ publishing {
     }
 }
 
-def getTriplet() {
-    def fileNameFinder = new FileNameFinder()
-    for (File folder : file("$projectDir/vcpkg_installed").listFiles()) {
-        if (folder.name == project.platform) {
-            println folder.name
-            return folder.name
-        }
-    }
-    throw new RuntimeException("Platform not found");
-}
-
-
 def getPlatformPath(triplet) {
     if (triplet == "arm32-linux") {
         return "linux/arm32"
@@ -53,13 +41,13 @@ def getPlatformPath(triplet) {
     }
 }
 
-ext.triplet = getTriplet()
+ext.triplet = platform
 ext.platformPath = getPlatformPath(ext.triplet)
 ext.platformClassifier = ext.platformPath.replaceFirst('/', '')
 
 ext.repo = "thirdparty-gtsam"
 
-def triplet = getTriplet()
+def triplet = platform
 
 def pubVersion = "2.2-1"
 
