@@ -27,7 +27,7 @@ jobs:
           distribution: 'temurin'
       - name: Build with CMake
         run: |
-          cmake -B build -S .
+          cmake -G Ninja -B build -S .
           cmake --build build --parallel $(nproc)
       - run: ./gradlew publish ${{ matrix.build-options }}
         name: Build with Gradle
@@ -63,7 +63,7 @@ jobs:
           arch: ${{ matrix.tool-arch }}
       - name: Build with CMake
         run: |
-          cmake -B build -S .
+          cmake -G Ninja -B build -S .
           cmake --build build --parallel $(nproc)
       - run: ./gradlew publish ${{ matrix.build-options }}
         name: Build with Gradle
@@ -87,7 +87,7 @@ jobs:
         name: install ninja
       - name: Build with CMake
         run: |
-          cmake -B build -S .
+          cmake -G Ninja -B build -S .
           cmake --build build --parallel $(nproc)
       - run: ./gradlew publish -Pplatform=x64-osx
         name: Build with Gradle
@@ -111,7 +111,7 @@ jobs:
         name: install ninja
       - name: Build with CMake
         run: |
-          cmake -B build -S .
+          cmake -G Ninja -B build -S .
           cmake --build build --parallel $(nproc)
       - run: ./gradlew publish -Pplatform=arm64-osx
         name: Build with Gradle
