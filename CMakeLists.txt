@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
+project(thirdparty-gtsam)
+
 set(GTSAM_ENABLE_BOOST_SERIALIZATION OFF)
 set(GTSAM_USE_BOOST_FEATURES OFF)
 
