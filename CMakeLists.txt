@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(GTSAM_ENABLE_BOOST_SERIALIZATION OFF)
+set(GTSAM_USE_BOOST_FEATURES OFF)
+
 include(ExternalProject)
 ExternalProject_Add(gtsam
   GIT_REPOSITORY    https://github.com/mcm001/gtsam
@@ -7,6 +10,3 @@ ExternalProject_Add(gtsam
   SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/gtsam-src"
   BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/gtsam-build"
 )
-
-set(GTSAM_ENABLE_BOOST_SERIALIZATION OFF)
-set(GTSAM_USE_BOOST_FEATURES OFF)
