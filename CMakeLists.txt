@@ -9,8 +9,12 @@ project(thirdparty-gtsam)
 set(GTSAM_ENABLE_BOOST_SERIALIZATION OFF)
 set(GTSAM_USE_BOOST_FEATURES OFF)
 
+set(BUILD_ROBORIO OFF CACHE BOOL OFF FORCE)
+
+if (BUILD_ROBORIO)
 set(CMAKE_C_COMPILER "/usr/local/arm-linux-gnueabihf")
 set(CMAKE_CXX_COMPILER "/usr/local/arm-linux-gnueabihf")
+endif()
 
 include(FetchContent)
 fetchcontent_declare(
