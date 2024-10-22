@@ -25,6 +25,8 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
+      - name: Install Ninja
+        run: sudo apt install ninja build-essential
       - name: Build with CMake
         run: |
           cmake -G Ninja -B build -S .
