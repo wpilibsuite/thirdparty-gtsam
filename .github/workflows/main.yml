@@ -27,7 +27,7 @@ jobs:
           run: |
             cmake -G Ninja -B build -S . --toolchain toolchain-config.cmake
             cmake --build build
-        - run: ./gradlew publish -Pplatform=arm-frc2024-linux-gnueabi
+        - run: ./gradlew publish -Pplatform=arm-frc2024-linux
           name: Build with Gradle
         - uses: actions/upload-artifact@v4
           with:
