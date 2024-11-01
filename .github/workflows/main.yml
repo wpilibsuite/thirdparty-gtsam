@@ -26,7 +26,7 @@ jobs:
         - name: Build with CMake
           run: |
             cmake -G Ninja -B build -S . --toolchain toolchain-config.cmake
-            cmake --build build
+            cmake --build build --parallel $(nproc)
         - run: ./gradlew publish -Pplatform=arm-frc2024-linux
           name: Build with Gradle
         - uses: actions/upload-artifact@v4
@@ -59,7 +59,7 @@ jobs:
       - name: Build with CMake
         run: |
           cmake -G Ninja -B build -S .
-          cmake --build build
+          cmake --build build --parallel $(nproc)
       - run: ./gradlew publish ${{ matrix.build-options }}
         name: Build with Gradle
       - uses: actions/upload-artifact@v4
@@ -95,7 +95,7 @@ jobs:
       - name: Build with CMake
         run: |
           cmake -G Ninja -B build -S .
-          cmake --build build
+          cmake --build build --parallel $(nproc)
       - run: ./gradlew publish ${{ matrix.build-options }}
         name: Build with Gradle
       - uses: actions/upload-artifact@v4
@@ -119,7 +119,7 @@ jobs:
       - name: Build with CMake
         run: |
           cmake -G Ninja -B build -S .
-          cmake --build build
+          cmake --build build --parallel $(nproc)
       - run: ./gradlew publish -Pplatform=x64-osx
         name: Build with Gradle
       - uses: actions/upload-artifact@v4
@@ -143,7 +143,7 @@ jobs:
       - name: Build with CMake
         run: |
           cmake -G Ninja -B build -S .
-          cmake --build build
+          cmake --build build --parallel $(nproc)
       - run: ./gradlew publish -Pplatform=arm64-osx
         name: Build with Gradle
       - uses: actions/upload-artifact@v4
