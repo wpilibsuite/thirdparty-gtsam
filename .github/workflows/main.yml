@@ -23,10 +23,14 @@ jobs:
             sudo apt-get install -y ninja-build build-essential
         - run: curl -SL https://github.com/wpilibsuite/opensdk/releases/download/v2024-1/cortexa9_vfpv3-roborio-academic-2024-x86_64-linux-gnu-Toolchain-12.1.0.tgz | tar xzf - --strip-components=2
           name: Replace arm32 compiler
+        - name: Install sccache
+          uses: mozilla-actions/sccache-action@v0.0.5
         - name: Build with CMake
           run: |
             cmake -G Ninja -B build -S . --toolchain toolchain-config.cmake
             cmake --build build --parallel $(nproc)
+          env:
+            SCCACHE_GHA_ENABLED: "true"
         - run: ./gradlew publish -Pplatform=arm-frc2024-linux
           name: Build with Gradle
         - uses: actions/upload-artifact@v4
@@ -56,10 +60,14 @@ jobs:
         run: |
           sudo apt-get update -q
           sudo apt-get install -y ninja-build build-essential
+      - name: Install sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
       - name: Build with CMake
         run: |
           cmake -G Ninja -B build -S .
           cmake --build build --parallel $(nproc)
+        env:
+          SCCACHE_GHA_ENABLED: "true"
       - run: ./gradlew publish ${{ matrix.build-options }}
         name: Build with Gradle
       - uses: actions/upload-artifact@v4
@@ -92,10 +100,14 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1.13.0
         with:
           arch: ${{ matrix.tool-arch }}
+      - name: Install sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
       - name: Build with CMake
         run: |
           cmake -G Ninja -B build -S .
           cmake --build build --parallel $(nproc)
+        env:
+          SCCACHE_GHA_ENABLED: "true"
       - run: ./gradlew publish ${{ matrix.build-options }}
         name: Build with Gradle
       - uses: actions/upload-artifact@v4
@@ -116,10 +128,14 @@ jobs:
           distribution: 'temurin'
       - run: brew install cmake ninja
         name: install ninja
+      - name: Install sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
       - name: Build with CMake
         run: |
           cmake -G Ninja -B build -S .
           cmake --build build --parallel $(nproc)
+        env:
+          SCCACHE_GHA_ENABLED: "true"
       - run: ./gradlew publish -Pplatform=x64-osx
         name: Build with Gradle
       - uses: actions/upload-artifact@v4
@@ -140,10 +156,14 @@ jobs:
           distribution: 'temurin'
       - run: brew install cmake ninja
         name: install ninja
+      - name: Install sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
       - name: Build with CMake
         run: |
           cmake -G Ninja -B build -S .
           cmake --build build --parallel $(nproc)
+        env:
+          SCCACHE_GHA_ENABLED: "true"
       - run: ./gradlew publish -Pplatform=arm64-osx
         name: Build with Gradle
       - uses: actions/upload-artifact@v4
