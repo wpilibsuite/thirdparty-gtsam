@@ -104,7 +104,7 @@ jobs:
         uses: mozilla-actions/sccache-action@v0.0.5
       - name: Build with CMake
         run: |
-          cmake -G Ninja -B build -S . -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+          cmake -G Ninja -B build -S . # -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
           cmake --build build --parallel $(nproc)
         env:
           SCCACHE_GHA_ENABLED: "true"
