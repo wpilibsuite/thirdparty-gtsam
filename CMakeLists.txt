@@ -6,6 +6,14 @@ cmake_minimum_required(VERSION 3.16)
 
 project(thirdparty-gtsam)
 
+if(MSVC)
+    target_compile_options(
+        gtsam
+        PRIVATE
+            /FS
+    )
+endif()
+
 set(GTSAM_ENABLE_BOOST_SERIALIZATION OFF)
 set(GTSAM_USE_BOOST_FEATURES OFF)
 
