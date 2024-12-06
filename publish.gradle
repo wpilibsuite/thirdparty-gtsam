@@ -167,10 +167,14 @@ model {
                 version pubVersion
             }
         }
+        photonMavenURL = 'https://maven.photonvision.org/' + (isDev ? 'snapshots' : 'releases');
         repositories {
             maven {
-                url "${System.getProperty('user.home')}/releases/maven/${project.repo}"
-            }
-        }
+                    url(photonMavenURL)
+                    credentials {
+                        username 'ghactions'
+                        password System.getenv("ARTIFACTORY_API_KEY")
+                }
+            }
     }
 }
