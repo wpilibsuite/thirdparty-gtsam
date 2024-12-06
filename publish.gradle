@@ -154,9 +154,9 @@ if (!project.hasProperty('skipDebug')) {
     addTaskToCopyAllOutputs(cppLibsZipStaticDebug)
 }
 
+def isDev = true
+
 if (project.hasProperty('release')) {
-    isDev = true
-} else {
     isDev = false
 }
 
