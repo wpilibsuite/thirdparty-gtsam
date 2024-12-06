@@ -181,6 +181,7 @@ model {
                         username 'ghactions'
                         password System.getenv("ARTIFACTORY_API_KEY")
                 }
-            }
+            }
+        }
     }
 }
