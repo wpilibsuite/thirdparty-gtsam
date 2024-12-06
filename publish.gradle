@@ -154,6 +154,12 @@ if (!project.hasProperty('skipDebug')) {
     addTaskToCopyAllOutputs(cppLibsZipStaticDebug)
 }
 
+if (project.hasProperty('release')) {
+    isDev = true
+} else {
+    isDev = false
+}
+
 model {
     publishing {
         publications {
