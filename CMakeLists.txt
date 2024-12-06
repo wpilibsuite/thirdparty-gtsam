@@ -8,6 +8,7 @@ project(thirdparty-gtsam)
 
 set(GTSAM_ENABLE_BOOST_SERIALIZATION OFF)
 set(GTSAM_USE_BOOST_FEATURES OFF)
+set(GTSAM_BUILD_PYTHON OFF)
 
 include(FetchContent)
 fetchcontent_declare(
