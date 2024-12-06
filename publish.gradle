@@ -162,6 +162,10 @@ if (project.hasProperty('release')) {
 
 def photonMavenURL = 'https://maven.photonvision.org/' + (isDev ? 'snapshots' : 'releases');
 
+if (!project.hasProperty("thirdparty")) {
+    return
+}
+
 model {
     publishing {
         publications {
