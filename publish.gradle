@@ -160,6 +160,8 @@ if (project.hasProperty('release')) {
     isDev = false
 }
 
+def photonMavenURL = 'https://maven.photonvision.org/' + (isDev ? 'snapshots' : 'releases');
+
 model {
     publishing {
         publications {
@@ -173,7 +175,6 @@ model {
                 version pubVersion
             }
         }
-        photonMavenURL = 'https://maven.photonvision.org/' + (isDev ? 'snapshots' : 'releases');
         repositories {
             maven {
                     url(photonMavenURL)
