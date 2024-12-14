@@ -90,8 +90,23 @@ task outputVersions() {
     }
 }
 
+task copyHeaders() {
+    doFirst {
+        exec {
+            workingDir rootDir
+            def args = [
+                "sh",
+                "-c",
+                "./copy-headers.sh"
+            ]
+            commandLine args
+        }
+    }
+}
+
 task cppHeadersZip(type: Zip) {
     dependsOn outputVersions
+    dependsOn copyHeaders
     destinationDirectory = outputsFolder
     archiveBaseName = zipBaseName
     archiveClassifier = "headers"
@@ -99,7 +114,7 @@ task cppHeadersZip(type: Zip) {
     from(licenseFile) {
         into '/'
     }
-    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("vcpkg_installed").resolve(triplet).resolve("include")
+    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("gradleDir/include")
     from(resolvedDir.toFile()) {
         into '/include'
         include '**/*.hpp', '**/*.h'
