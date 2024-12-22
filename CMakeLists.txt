@@ -2,10 +2,13 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "" FORCE)
 endif()
 
-cmake_minimum_required(VERSION 3.16)
-
+cmake_minimum_required(VERSION 3.25)
+set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
+set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT Embedded)
 project(thirdparty-gtsam)
 
+set(GTSAM_COMPILE_OPTIONS_PRIVATE_DEBUG CACHE INTERNAL FORCE)
+set(GTSAM_COMPILE_OPTIONS_PRIVATE_RELWITHDEBINFO CACHE INTERNAL FORCE)
 set(GTSAM_ENABLE_BOOST_SERIALIZATION OFF)
 set(GTSAM_USE_BOOST_FEATURES OFF)
 set(GTSAM_BUILD_PYTHON OFF)
@@ -22,4 +25,3 @@ fetchcontent_declare(
     GIT_TAG           6f7365e1f393d219dad5e65752529c7c0369fefc
 )
 fetchcontent_makeavailable(gtsam)
-add_library(gtsam_static STATIC IMPORTED)

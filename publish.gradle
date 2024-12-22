@@ -1,4 +1,3 @@
-import java.security.MessageDigest
 import org.gradle.internal.os.OperatingSystem
 
 import java.nio.file.Files
@@ -21,35 +20,59 @@ publishing {
     }
 }
 
-def getPlatformPath(triplet) {
-    if (triplet == "arm32-linux") {
+def getPlatform() {
+    def platform
+    def os_name = System.getProperty("os.name")
+    def os_arch = System.getProperty("os.arch")
+
+    if (os_arch == 'amd64') {
+        os_arch = 'x86_64'
+    } else if (os_arch == 'aarch64' || os_arch == 'arm64') {
+        os_arch = 'arm64'
+    }
+
+    if (OperatingSystem.current().isWindows()) {
+        platform = "windows-${os_arch}"
+    } else if (OperatingSystem.current().isLinux()) {
+        platform = "linux-${os_arch}"
+    } else if (OperatingSystem.current().isMacOsX()) {
+        platform = "osx-${os_arch}"
+    } else {
+        platform = "${os_name}-${os_arch}"
+    }
+    return platform
+}
+
+def getPlatformPath(platform) {
+    if (platform == "linux-athena") {
+        return "linux/athena"
+    } else if (platform == "linux-arm32") {
         return "linux/arm32"
-    } else if (triplet == "arm64-linux") {
+    } else if (platform == "linux-arm64") {
         return "linux/arm64"
-    } else if (triplet == "x64-linux") {
+    } else if (platform == "linux-x86_64") {
         return "linux/x86-64"
-    } else if (triplet == "x64-osx") {
-        return "osx/x86-64"
-    } else if (triplet == "arm64-osx") {
-        return "osx/arm64"
-    } else if (triplet == "x64-windows") {
+    } else if (platform == "osx-universal") {
+        return "osx/universal"
+    } else if (platform == "windows-x86_64") {
         return "windows/x86-64"
-    } else if (triplet == "arm64-windows") {
+    } else if (platform == "windows-arm64") {
         return "windows/arm64"
     } else {
         return ""
     }
 }
 
-ext.triplet = platform
-ext.platformPath = getPlatformPath(ext.triplet)
+if (!project.hasProperty('platform')) {
+    println "No 'platform' property specified; using the build system's platform"
+    ext.platform = getPlatform()
+}
+ext.platformPath = getPlatformPath(project.platform)
 ext.platformClassifier = ext.platformPath.replaceFirst('/', '')
 
 ext.repo = "thirdparty-gtsam"
 
-def triplet = platform
-
-def pubVersion = "2.2-1"
+def pubVersion = "4.3-1"
 
 def outputsFolder = file("$project.buildDir/outputs")
 
@@ -61,9 +84,7 @@ def versionFile = file("$outputsFolder/version.txt")
 def licenseFile = file("LICENSE.md")
 
 def outputClassifierStatic = project.ext.platformClassifier + 'static'
-def outputClassifierDebugStatic = project.ext.platformClassifier + 'debug/static'
-System.out.println(triplet)
-
+println platformPath
 
 task copyAllOutputs(type: Copy) {
     destinationDir = outputsFolder
@@ -90,141 +111,53 @@ task outputVersions() {
     }
 }
 
-task cmakeRelease() {
-    doFirst {
-        exec {
-            workingDir rootDir
-            def args
-            if (platform.contains("windows")) {
-                args = [
-                    "cmake",
-                    "-B build",
-                    "-G Ninja",
-                    "-DCMAKE_BUILD_TYPE=Release",
-                ]
-            } else {
-                args = [
-                    "cmake",
-                    "-B build",
-                    "-G Ninja",
-                    "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
-                    "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache ",
-                    "-DCMAKE_BUILD_TYPE=Release",
-                ]
-            }
-            commandLine args
-        }
-        exec {
-            workingDir rootDir
-            def args = [
-                "cmake",
-                "--build",
-                "build",
-                "--parallel",
-                "6"
-            ]
-            commandLine args
-        }
-    }
-}
-task cppLibsZipStatic(type: Zip) {
-    dependsOn cmakeRelease
+["Debug", "RelWithDebInfo"].each { buildType ->
+    def buildDir = "build$buildType"
+    def installDir = "install$buildType"
 
-    destinationDirectory = outputsFolder
-    archiveClassifier = outputClassifierStatic
-    archiveBaseName = zipBaseName
-    duplicatesStrategy = 'exclude'
+    task "cmakeConfigure$buildType"(type: Exec) {
+        def baseArgs = ["-B", buildDir, "-G", "Ninja", "-DCMAKE_BUILD_TYPE=$buildType", "-DCMAKE_INSTALL_PREFIX=$installDir"]
 
-    from(licenseFile) {
-        into '/'
-    }
-    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("build/_deps/gtsam-build")
-    from(resolvedDir.toFile()) {
-        into project.platformPath + '/static'
-        exclude '**/pkgconfig'
-        include '**/*.a'
-        include '**/*.lib'
-        include '**/*.pdb'
-    }
-}
-
-task cmakeDebug() {
-    doFirst {
-        exec {
-            workingDir rootDir
-            def args
-            if (platform.contains("windows")) {
-                args = [
-                    "cmake",
-                    "-B buildDebug",
-                    "-G Ninja",
-                    "-DCMAKE_BUILD_TYPE=Debug",
-                ]
-            } else {
-                args = [
-                    "cmake",
-                    "-B buildDebug",
-                    "-G Ninja",
-                    "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
-                    "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache ",
-                    "-DCMAKE_BUILD_TYPE=Debug",
-                ]
-            }
-            commandLine args
+        if (project.hasProperty('sccache')) {
+            baseArgs = baseArgs + "-DCMAKE_C_COMPILER_LAUNCHER=sccache" + "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
         }
-        exec {
-            workingDir rootDir
-            def args = [
-                "cmake",
-                "--build",
-                "buildDebug",
-                "--parallel",
-                "6"
-            ]
-            commandLine args
+        outputs.dir buildDir
+        executable "cmake"
+        args baseArgs
+    }
+
+    task "cmakeBuild$buildType"(type: Exec) {
+        dependsOn "cmakeConfigure$buildType"
+        def processors = Runtime.runtime.availableProcessors()
+        def baseArgs = ["--build", buildDir, "--parallel", "$processors", "--target", "install"]
+        outputs.dirs buildDir, installDir
+        executable "cmake"
+        args baseArgs
+    }
+
+    task "cppLibsZipStatic$buildType"(type: Zip) {
+        dependsOn "cmakeBuild$buildType"
+        destinationDirectory = outputsFolder
+        archiveClassifier = outputClassifierStatic + (buildType == "Debug" ? "debug" : "")
+        archiveBaseName = zipBaseName + (buildType == "Debug" ? "debug" : "")
+        duplicatesStrategy = 'exclude'
+
+        from(licenseFile) {
+            into '/'
+        }
+        def resolvedDir = Paths.get(projectDir.canonicalPath).resolve(installDir).resolve("lib")
+        from(resolvedDir.toFile()) {
+            into project.platformPath + '/static'
+            include '**/*.a'
+            include '**/*.lib'
+            include '**/*.pdb'
         }
     }
 }
-
-task cppLibsZipStaticDebug(type: Zip) {
-    dependsOn cmakeDebug
-
-    destinationDirectory = outputsFolder
-    archiveClassifier = outputClassifierStatic + 'debug'
-    archiveBaseName = zipBaseName + 'debug'
-    duplicatesStrategy = 'exclude'
-
-    from(licenseFile) {
-        into '/'
-    }
-    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("buildDebug/_deps/gtsam-build")
-    from(resolvedDir.toFile()) {
-        into project.platformPath + '/static'
-        exclude '**/pkgconfig'
-        include '**/*.a'
-        include '**/*.lib'
-        include '**/*.pdb'
-    }
-}
-
-task copyHeaders() {
-    dependsOn cmakeDebug
-    doFirst {
-        exec {
-            workingDir rootDir
-            def args = [
-                "sh",
-                "-c",
-                "./copy-headers.sh"
-            ]
-            commandLine args
-        }
-    }
-}
-
+// Choice of using Debug is arbitrary, just wanted a build task to depend on
 task cppHeadersZip(type: Zip) {
+    dependsOn "cmakeBuildDebug"
     dependsOn outputVersions
-    dependsOn copyHeaders
     destinationDirectory = outputsFolder
     archiveBaseName = zipBaseName
     archiveClassifier = "headers"
@@ -232,9 +165,9 @@ task cppHeadersZip(type: Zip) {
     from(licenseFile) {
         into '/'
     }
-    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("gradleDir/include")
+    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("installDebug").resolve("include")
     from(resolvedDir.toFile()) {
-        into '/include'
+        into '/'
         include '**/*.hpp', '**/*.h'
     }
 
@@ -242,60 +175,26 @@ task cppHeadersZip(type: Zip) {
 }
 
 if (!project.hasProperty('skipRelease')) {
-    addTaskToCopyAllOutputs(cppLibsZipStatic)
+    addTaskToCopyAllOutputs(cppLibsZipStaticRelWithDebInfo)
 }
 
 if (!project.hasProperty('skipDebug')) {
     addTaskToCopyAllOutputs(cppLibsZipStaticDebug)
 }
 
-def isDev = true
-
-if (project.hasProperty('release')) {
-    isDev = false
-}
-
-def photonMavenURL = 'https://maven.photonvision.org/' + (isDev ? 'snapshots' : 'releases');
-
-if (project.hasProperty("thirdparty")) {
-    model {
-        publishing {
-            publications {
-                cpp(MavenPublication) {
-                    artifact cppHeadersZip
-                    artifact cppLibsZipStatic
-                    artifact cppLibsZipStaticDebug
-
-                    artifactId = "${baseArtifactId}-cpp"
-                    groupId artifactGroupId
-                    version pubVersion
-                }
-            }
-            repositories {
-                maven {
-                        url(photonMavenURL)
-                        credentials {
-                            username 'ghactions'
-                            password System.getenv("ARTIFACTORY_API_KEY")
-                    }
-                }
+model {
+    publishing {
+        publications {
+            cpp(MavenPublication) {
+                artifact cppHeadersZip
+                artifact cppLibsZipStaticRelWithDebInfo
+                artifact cppLibsZipStaticDebug
+                artifactId = "${baseArtifactId}-cpp"
+                groupId artifactGroupId
+                version pubVersion
             }
         }
-    }
-} else {
-    model {
-        publishing {
-            publications {
-                cpp(MavenPublication) {
-                    artifact cppHeadersZip
-                    artifact cppLibsZipStatic
-                    artifact cppLibsZipStaticDebug
-
-                    artifactId = "${baseArtifactId}-cpp"
-                    groupId artifactGroupId
-                    version pubVersion
-                }
-            }
+        if (project.hasProperty("repo")) {
             repositories {
                 maven {
                     url "${System.getProperty('user.home')}/releases/maven/${project.repo}"
