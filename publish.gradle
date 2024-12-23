@@ -100,7 +100,7 @@ task cmakeRelease() {
                     "cmake",
                     "-B build",
                     "-G Ninja",
-                    "-DCMAKE_BUILD_TYPE=Debug",
+                    "-DCMAKE_BUILD_TYPE=Release",
                 ]
             } else {
                 args = [
@@ -109,7 +109,7 @@ task cmakeRelease() {
                     "-G Ninja",
                     "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
                     "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache ",
-                    "-DCMAKE_BUILD_TYPE=Debug",
+                    "-DCMAKE_BUILD_TYPE=Release",
                 ]
             }
             commandLine args
@@ -156,14 +156,14 @@ task cmakeDebug() {
             if (platform.contains("windows")) {
                 args = [
                     "cmake",
-                    "-B build",
+                    "-B buildDebug",
                     "-G Ninja",
                     "-DCMAKE_BUILD_TYPE=Debug",
                 ]
             } else {
                 args = [
                     "cmake",
-                    "-B build",
+                    "-B buildDebug",
                     "-G Ninja",
                     "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
                     "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache ",
@@ -177,7 +177,7 @@ task cmakeDebug() {
             def args = [
                 "cmake",
                 "--build",
-                "build",
+                "buildDebug",
                 "--parallel",
                 "6"
             ]
@@ -197,13 +197,28 @@ task cppLibsZipStaticDebug(type: Zip) {
     from(licenseFile) {
         into '/'
     }
-    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("build/_deps/gtsam-build")
+    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("buildDebug/_deps/gtsam-build")
     from(resolvedDir.toFile()) {
         into project.platformPath + '/static'
         exclude '**/pkgconfig'
         include '**/*.a'
         include '**/*.lib'
         include '**/*.pdb'
+    }
+}
+
+task cleanBuild() {
+    dependsOn cppLibsZipStaticDebug
+    doLast {
+        exec {
+            workingDir rootDir
+            def args = [
+                "rm",
+                "build",
+                "-rf"
+            ]
+            commandLine args
+        }
     }
 }
 
