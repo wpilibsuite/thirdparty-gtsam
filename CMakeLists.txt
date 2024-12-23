@@ -19,7 +19,7 @@ include(FetchContent)
 fetchcontent_declare(
     gtsam
     GIT_REPOSITORY    https://github.com/borglab/gtsam
-    GIT_TAG           3af5360ad397422023160604de99d0de447b0a88
+    GIT_TAG           6f7365e1f393d219dad5e65752529c7c0369fefc
 )
 fetchcontent_makeavailable(gtsam)
 add_library(gtsam_static STATIC IMPORTED)
