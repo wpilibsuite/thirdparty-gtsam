@@ -11,6 +11,9 @@ set(GTSAM_USE_BOOST_FEATURES OFF)
 set(GTSAM_BUILD_PYTHON OFF)
 set(GTSAM_BUILD_EXAMPLES_ALWAYS OFF)
 set(GTSAM_BUILD_TESTS OFF)
+set(BUILD_SHARED_LIBS OFF)
+set(GTSAM_FORCE_SHARED_LIB OFF)
+set(GTSAM_FORCE_STATIC_LIB ON)
 
 include(FetchContent)
 fetchcontent_declare(
@@ -19,3 +22,4 @@ fetchcontent_declare(
     GIT_TAG           3af5360ad397422023160604de99d0de447b0a88
 )
 fetchcontent_makeavailable(gtsam)
+add_library(gtsam_static STATIC IMPORTED)

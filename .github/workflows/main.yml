@@ -62,14 +62,10 @@ jobs:
           sudo apt-get install -y ninja-build build-essential
       - name: Install sccache
         uses: mozilla-actions/sccache-action@v0.0.5
-      - name: Build with CMake
-        run: |
-          cmake -G Ninja -B build -S . -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
-          cmake --build build --parallel $(nproc)
-        env:
-          SCCACHE_GHA_ENABLED: "true"
       - run: ./gradlew publish ${{ matrix.build-options }}
         name: Build with Gradle
+        env:
+          SCCACHE_GHA_ENABLED: "true"
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
@@ -102,14 +98,10 @@ jobs:
           arch: ${{ matrix.tool-arch }}
       - name: Install sccache
         uses: mozilla-actions/sccache-action@v0.0.5
-      - name: Build with CMake
-        run: |
-          cmake -G Ninja -B build -S . # -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
-          cmake --build build --parallel $(nproc)
-        env:
-          SCCACHE_GHA_ENABLED: "true"
       - run: ./gradlew publish ${{ matrix.build-options }}
         name: Build with Gradle
+        env:
+          SCCACHE_GHA_ENABLED: "true"
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
@@ -130,14 +122,10 @@ jobs:
         name: install ninja
       - name: Install sccache
         uses: mozilla-actions/sccache-action@v0.0.5
-      - name: Build with CMake
-        run: |
-          cmake -G Ninja -B build -S . -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
-          cmake --build build --parallel $(nproc)
-        env:
-          SCCACHE_GHA_ENABLED: "true"
       - run: ./gradlew publish -Pplatform=x64-osx
         name: Build with Gradle
+        env:
+          SCCACHE_GHA_ENABLED: "true"
       - uses: actions/upload-artifact@v4
         with:
           name: macOS
@@ -158,14 +146,10 @@ jobs:
         name: install ninja
       - name: Install sccache
         uses: mozilla-actions/sccache-action@v0.0.5
-      - name: Build with CMake
-        run: |
-          cmake -G Ninja -B build -S . -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
-          cmake --build build --parallel $(nproc)
-        env:
-          SCCACHE_GHA_ENABLED: "true"
       - run: ./gradlew publish -Pplatform=arm64-osx
         name: Build with Gradle
+        env:
+          SCCACHE_GHA_ENABLED: "true"
       - uses: actions/upload-artifact@v4
         with:
           name: macOSArm

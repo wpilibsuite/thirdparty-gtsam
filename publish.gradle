@@ -90,7 +90,125 @@ task outputVersions() {
     }
 }
 
+task cmakeRelease() {
+    doFirst {
+        exec {
+            workingDir rootDir
+            def args
+            if (platform.contains("windows")) {
+                args = [
+                    "cmake",
+                    "-B build",
+                    "-G Ninja",
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                ]
+            } else {
+                args = [
+                    "cmake",
+                    "-B build",
+                    "-G Ninja",
+                    "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
+                    "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache ",
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                ]
+            }
+            commandLine args
+        }
+        exec {
+            workingDir rootDir
+            def args = [
+                "cmake",
+                "--build",
+                "build",
+                "--parallel",
+                "6"
+            ]
+            commandLine args
+        }
+    }
+}
+task cppLibsZipStatic(type: Zip) {
+    dependsOn cmakeRelease
+
+    destinationDirectory = outputsFolder
+    archiveClassifier = outputClassifierStatic
+    archiveBaseName = zipBaseName
+    duplicatesStrategy = 'exclude'
+
+    from(licenseFile) {
+        into '/'
+    }
+    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("build/_deps/gtsam-build")
+    from(resolvedDir.toFile()) {
+        into project.platformPath + '/static'
+        exclude '**/pkgconfig'
+        include '**/*.a'
+        include '**/*.lib'
+        include '**/*.pdb'
+    }
+}
+
+task cmakeDebug() {
+    doFirst {
+        exec {
+            workingDir rootDir
+            def args
+            if (platform.contains("windows")) {
+                args = [
+                    "cmake",
+                    "-B build",
+                    "-G Ninja",
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                ]
+            } else {
+                args = [
+                    "cmake",
+                    "-B build",
+                    "-G Ninja",
+                    "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
+                    "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache ",
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                ]
+            }
+            commandLine args
+        }
+        exec {
+            workingDir rootDir
+            def args = [
+                "cmake",
+                "--build",
+                "build",
+                "--parallel",
+                "6"
+            ]
+            commandLine args
+        }
+    }
+}
+
+task cppLibsZipStaticDebug(type: Zip) {
+    dependsOn cmakeDebug
+
+    destinationDirectory = outputsFolder
+    archiveClassifier = outputClassifierStatic + 'debug'
+    archiveBaseName = zipBaseName + 'debug'
+    duplicatesStrategy = 'exclude'
+
+    from(licenseFile) {
+        into '/'
+    }
+    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("build/_deps/gtsam-build")
+    from(resolvedDir.toFile()) {
+        into project.platformPath + '/static'
+        exclude '**/pkgconfig'
+        include '**/*.a'
+        include '**/*.lib'
+        include '**/*.pdb'
+    }
+}
+
 task copyHeaders() {
+    dependsOn cmakeDebug
     doFirst {
         exec {
             workingDir rootDir
@@ -121,44 +239,6 @@ task cppHeadersZip(type: Zip) {
     }
 
     includeEmptyDirs = false
-}
-
-task cppLibsZipStatic(type: Zip) {
-    destinationDirectory = outputsFolder
-    archiveClassifier = outputClassifierStatic
-    archiveBaseName = zipBaseName
-    duplicatesStrategy = 'exclude'
-
-    from(licenseFile) {
-        into '/'
-    }
-    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("vcpkg_installed").resolve(triplet).resolve("lib")
-    from(resolvedDir.toFile()) {
-        into project.platformPath + '/static'
-        exclude '**/pkgconfig'
-        include '**/*.a'
-        include '**/*.lib'
-        include '**/*.pdb'
-    }
-}
-
-task cppLibsZipStaticDebug(type: Zip) {
-    destinationDirectory = outputsFolder
-    archiveClassifier = outputClassifierStatic + 'debug'
-    archiveBaseName = zipBaseName + 'debug'
-    duplicatesStrategy = 'exclude'
-
-    from(licenseFile) {
-        into '/'
-    }
-    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("vcpkg_installed").resolve(triplet).resolve("debug").resolve("lib")
-    from(resolvedDir.toFile()) {
-        into project.platformPath + '/static'
-        exclude '**/pkgconfig'
-        include '**/*.a'
-        include '**/*.lib'
-        include '**/*.pdb'
-    }
 }
 
 if (!project.hasProperty('skipRelease')) {
