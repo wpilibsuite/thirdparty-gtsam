@@ -207,21 +207,6 @@ task cppLibsZipStaticDebug(type: Zip) {
     }
 }
 
-task cleanBuild() {
-    dependsOn cppLibsZipStaticDebug
-    doLast {
-        exec {
-            workingDir rootDir
-            def args = [
-                "rm",
-                "build",
-                "-rf"
-            ]
-            commandLine args
-        }
-    }
-}
-
 task copyHeaders() {
     dependsOn cmakeDebug
     doFirst {
