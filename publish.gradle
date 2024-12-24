@@ -142,8 +142,10 @@ task outputVersions() {
         archiveBaseName = zipBaseName + (buildType == "Debug" ? "debug" : "")
         duplicatesStrategy = 'exclude'
 
-        from(licenseFile) {
+        def license = Paths.get(projectDir.canonicalPath).resolve(buildDir).resolve("_deps").resolve("gtsam-src")
+        from(license.toFile()) {
             into '/'
+            include 'LICENSE*'
         }
         def resolvedDir = Paths.get(projectDir.canonicalPath).resolve(installDir).resolve("lib")
         from(resolvedDir.toFile()) {
@@ -162,8 +164,31 @@ task cppHeadersZip(type: Zip) {
     archiveBaseName = zipBaseName
     archiveClassifier = "headers"
 
-    from(licenseFile) {
+    def license = Paths.get(projectDir.canonicalPath).resolve("buildDebug").resolve("_deps").resolve("gtsam-src")
+    from(license.toFile()) {
         into '/'
+        include 'LICENSE*'
+    }
+    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("installDebug").resolve("include")
+    from(resolvedDir.toFile()) {
+        into '/'
+        include '**/*.hpp', '**/*.h'
+    }
+
+    includeEmptyDirs = false
+}
+
+task cppSourcesZip(type: Zip) {
+    dependsOn "cmakeBuildDebug"
+    dependsOn outputVersions
+    destinationDirectory = outputsFolder
+    archiveBaseName = zipBaseName
+    archiveClassifier = "sources"
+
+    def license = Paths.get(projectDir.canonicalPath).resolve("buildDebug").resolve("_deps").resolve("gtsam-src")
+    from(license.toFile()) {
+        into '/'
+        include 'LICENSE*'
     }
     def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("installDebug").resolve("include")
     from(resolvedDir.toFile()) {
