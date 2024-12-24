@@ -154,6 +154,7 @@ task outputVersions() {
             include '**/*.lib'
             include '**/*.pdb'
         }
+        includeEmptyDirs = false
     }
 }
 // Choice of using Debug is arbitrary, just wanted a build task to depend on
@@ -214,6 +215,7 @@ model {
                 artifact cppHeadersZip
                 artifact cppLibsZipStaticRelWithDebInfo
                 artifact cppLibsZipStaticDebug
+                artifact cppSourcesZip
                 artifactId = "${baseArtifactId}-cpp"
                 groupId artifactGroupId
                 version pubVersion
