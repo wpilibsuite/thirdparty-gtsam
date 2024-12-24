@@ -43,6 +43,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - container: wpilib/roborio-cross-ubuntu:2025-22.04
+            artifact-name: Athena
+            build-options: -Pplatform=linuxathena -Psccache
+          - container: wpilib/raspbian-cross-ubuntu:bookworm-22.04
+            artifact-name: Arm32
+            build-options: -Pplatform=linuxarm32 -Psccache
+          - container: wpilib/aarch64-cross-ubuntu:bookworm-22.04
+            artifact-name: Arm64
+            build-options: -Pplatform=linuxarm64 -Psccache
           - container: wpilib/ubuntu-base:22.04
             artifact-name: Linux
             build-options: -Pplatform=linux-x86_64 -Psccache
