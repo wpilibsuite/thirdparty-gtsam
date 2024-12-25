@@ -1,5 +1,4 @@
-/vcpkg_installed
-/build
-/buildDebug
+/build*
+/install*
 /.gradle
 /gradleDir

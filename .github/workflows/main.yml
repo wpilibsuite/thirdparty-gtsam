@@ -43,9 +43,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - container: wpilib/roborio-cross-ubuntu:2025-22.04
+            artifact-name: Athena
+            build-options: -Pplatform=linuxathena -Psccache
+          - container: wpilib/raspbian-cross-ubuntu:bookworm-22.04
+            artifact-name: Arm32
+            build-options: -Pplatform=linuxarm32 -Psccache
+          - container: wpilib/aarch64-cross-ubuntu:bookworm-22.04
+            artifact-name: Arm64
+            build-options: -Pplatform=linuxarm64 -Psccache
           - container: wpilib/ubuntu-base:22.04
             artifact-name: Linux
-            build-options: -Pplatform=x64-linux
+            build-options: -Pplatform=linux-x86_64 -Psccache
 
     name: "Build - ${{ matrix.artifact-name }}"
     runs-on: ubuntu-latest
@@ -62,8 +71,8 @@ jobs:
           sudo apt-get install -y ninja-build build-essential
       - name: Install sccache
         uses: mozilla-actions/sccache-action@v0.0.5
-      - run: ./gradlew publish ${{ matrix.build-options }}
-        name: Build with Gradle
+      - name: Build with Gradle
+        run: ./gradlew publish ${{ matrix.build-options }}
         env:
           SCCACHE_GHA_ENABLED: "true"
       - uses: actions/upload-artifact@v4
@@ -78,10 +87,10 @@ jobs:
         include:
           - artifact-name: WinArm64
             tool-arch: amd64_arm64
-            build-options: -Pplatform=arm64-windows
+            build-options: -Pplatform=windows-arm64 -Psccache
           - artifact-name: Win64
             tool-arch: amd64
-            build-options: -Pplatform=x64-windows
+            build-options: -Pplatform=windows-x86_64 -Psccache
 
     name: "Build - ${{ matrix.artifact-name }}"
     runs-on: windows-2019
@@ -98,8 +107,8 @@ jobs:
           arch: ${{ matrix.tool-arch }}
       - name: Install sccache
         uses: mozilla-actions/sccache-action@v0.0.5
-      - run: ./gradlew publish ${{ matrix.build-options }}
-        name: Build with Gradle
+      - name: Build with Gradle
+        run: ./gradlew publish ${{ matrix.build-options }}
         env:
           SCCACHE_GHA_ENABLED: "true"
       - uses: actions/upload-artifact@v4
@@ -122,67 +131,18 @@ jobs:
         name: install ninja
       - name: Install sccache
         uses: mozilla-actions/sccache-action@v0.0.5
-      - run: ./gradlew publish -Pplatform=x64-osx
-        name: Build with Gradle
+      - name: Build with Gradle
+        run: ./gradlew publish -Pplatform=osx-universal -Psccache
         env:
           SCCACHE_GHA_ENABLED: "true"
       - uses: actions/upload-artifact@v4
         with:
           name: macOS
           path: gradleDir/outputs/
-
-  build-mac-arm:
-    name: "Build - macOS (Arm)"
-    runs-on: macOS-14
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: 'true'
-      - uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: 'temurin'
-      - run: brew install cmake ninja
-        name: install ninja
-      - name: Install sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
-      - run: ./gradlew publish -Pplatform=arm64-osx
-        name: Build with Gradle
-        env:
-          SCCACHE_GHA_ENABLED: "true"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macOSArm
-          path: gradleDir/outputs/
-
-  make_universal:
-    name: Make Universal
-    needs: [build-mac, build-mac-arm]
-    runs-on: macos-14
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: macOS
-          path: build/downloads
-      - uses: actions/download-artifact@v4
-        with:
-          name: macOSArm
-          path: build/downloads
-      - uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: 'zulu'
-      - run: ./gradlew copyToUpload -Prunmerge
-        name: Build with Gradle
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macOSUniversal
-          path: build/toUpload/
 
   combine:
     name: Combine
-    needs: [build-docker, build-windows, make_universal] # , build-roborio]
+    needs: [build-docker, build-windows, build-mac] # , build-roborio]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
