@@ -123,7 +123,8 @@ jobs:
       - name: Flatten Artifacts
         run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
       - name: Combine
-        if: |
+        if: | 
+          github.repository_owner == 'PhotonVision' &&
           !startsWith(github.ref, 'refs/tags/v')
         run: ./gradlew publish -Pthirdparty
         working-directory: combiner
@@ -133,7 +134,7 @@ jobs:
           MAVEN_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_API_KEY }}
       - name: Combine (Release)
         if: |
-          github.repository_owner == 'PhotonVision`' &&
+          github.repository_owner == 'PhotonVision' &&
           startsWith(github.ref, 'refs/tags/v')
         run: ./gradlew publish -Pthirdparty -Prelease
         env:
