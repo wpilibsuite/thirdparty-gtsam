@@ -5,10 +5,6 @@ import java.nio.file.Paths
 
 apply plugin: 'maven-publish'
 
-configurations {
-    archives
-}
-
 publishing {
     repositories {
         maven {
@@ -68,9 +64,7 @@ if (!project.hasProperty('platform')) {
     ext.platform = getPlatform()
 }
 ext.platformPath = getPlatformPath(project.platform)
-ext.platformClassifier = ext.platformPath.replaceFirst('/', '')
-
-ext.repo = "thirdparty-gtsam"
+def outputClassifierStatic = ext.platformPath.replaceFirst('/', '') + 'static'
 
 def pubVersion = "4.3-1"
 
@@ -83,7 +77,6 @@ def zipBaseName = '_GROUP_edu_wpi_first_thirdparty_frc2025_gtsam_ID_gtsam-cpp_CL
 def versionFile = file("$outputsFolder/version.txt")
 def licenseFile = file("LICENSE.md")
 
-def outputClassifierStatic = project.ext.platformClassifier + 'static'
 println platformPath
 
 task copyAllOutputs(type: Copy) {
@@ -139,7 +132,7 @@ task outputVersions() {
         dependsOn "cmakeBuild$buildType"
         destinationDirectory = outputsFolder
         archiveClassifier = outputClassifierStatic + (buildType == "Debug" ? "debug" : "")
-        archiveBaseName = zipBaseName + (buildType == "Debug" ? "debug" : "")
+        archiveBaseName = zipBaseName
         duplicatesStrategy = 'exclude'
 
         def license = Paths.get(projectDir.canonicalPath).resolve(buildDir).resolve("_deps").resolve("gtsam-src")
@@ -219,13 +212,6 @@ model {
                 artifactId = "${baseArtifactId}-cpp"
                 groupId artifactGroupId
                 version pubVersion
-            }
-        }
-        if (project.hasProperty("repo")) {
-            repositories {
-                maven {
-                    url "${System.getProperty('user.home')}/releases/maven/${project.repo}"
-                }
             }
         }
     }

@@ -14,13 +14,13 @@ jobs:
         include:
           - container: wpilib/roborio-cross-ubuntu:2025-22.04
             artifact-name: Athena
-            build-options: -Pplatform=linuxathena -Psccache
+            build-options: -Pplatform=linux-athena -Psccache
           - container: wpilib/raspbian-cross-ubuntu:bookworm-22.04
             artifact-name: Arm32
-            build-options: -Pplatform=linuxarm32 -Psccache
+            build-options: -Pplatform=linux-arm32 -Psccache
           - container: wpilib/aarch64-cross-ubuntu:bookworm-22.04
             artifact-name: Arm64
-            build-options: -Pplatform=linuxarm64 -Psccache
+            build-options: -Pplatform=linux-arm64 -Psccache
           - container: wpilib/ubuntu-base:22.04
             artifact-name: Linux
             build-options: -Pplatform=linux-x86_64 -Psccache
@@ -111,7 +111,7 @@ jobs:
 
   combine:
     name: Combine
-    needs: [build-docker, build-windows, build-mac] # , build-roborio]
+    needs: [build-docker, build-windows, build-mac]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -124,6 +124,7 @@ jobs:
         run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
       - name: Combine
         if: |
+          github.repository_owner == 'PhotonVision' &&
           !startsWith(github.ref, 'refs/tags/v')
         run: ./gradlew publish -Pthirdparty
         working-directory: combiner
@@ -133,7 +134,7 @@ jobs:
           MAVEN_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_API_KEY }}
       - name: Combine (Release)
         if: |
-          github.repository_owner == 'PhotonVision`' &&
+          github.repository_owner == 'PhotonVision' &&
           startsWith(github.ref, 'refs/tags/v')
         run: ./gradlew publish -Pthirdparty -Prelease
         env:
