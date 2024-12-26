@@ -111,7 +111,7 @@ jobs:
 
   combine:
     name: Combine
-    needs: [build-docker, build-windows, build-mac] # , build-roborio]
+    needs: [build-docker, build-windows, build-mac]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
