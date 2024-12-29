@@ -22,7 +22,7 @@ set(GTSAM_FORCE_STATIC_LIB ON)
 include(FetchContent)
 fetchcontent_declare(
     gtsam
-    GIT_REPOSITORY    https://github.com/borglab/gtsam
-    GIT_TAG           6f7365e1f393d219dad5e65752529c7c0369fefc
+    GIT_REPOSITORY    https://github.com/mcm001/gtsam
+    GIT_TAG           4a9e82fc77f995afd71edd746111ed0523165960
 )
 fetchcontent_makeavailable(gtsam)
