@@ -6,6 +6,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+env:
+  SCCACHE_WEBDAV_ENDPOINT: "https://frcmaven.wpi.edu/artifactory/wpilib-generic-cache-cmake"
+
 jobs:
   build-docker:
     strategy:
@@ -43,7 +46,8 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew publish ${{ matrix.build-options }}
         env:
-          SCCACHE_GHA_ENABLED: "true"
+          SCCACHE_WEBDAV_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          SCCACHE_WEBDAV_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
@@ -79,7 +83,8 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew publish ${{ matrix.build-options }}
         env:
-          SCCACHE_GHA_ENABLED: "true"
+          SCCACHE_WEBDAV_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          SCCACHE_WEBDAV_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
@@ -103,7 +108,8 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew publish -Pplatform=osx-universal -Psccache
         env:
-          SCCACHE_GHA_ENABLED: "true"
+          SCCACHE_WEBDAV_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          SCCACHE_WEBDAV_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
       - uses: actions/upload-artifact@v4
         with:
           name: macOS
@@ -116,7 +122,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: photonvision/build-tools
+          repository: wpilibsuite/build-tools
       - uses: actions/download-artifact@v4
         with:
           path: combiner/products/build/allOutputs
@@ -124,23 +130,21 @@ jobs:
         run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
       - name: Combine
         if: |
-          github.repository_owner == 'PhotonVision' &&
+          github.repository_owner == 'wpilibsuite' &&
           !startsWith(github.ref, 'refs/tags/v')
         run: ./gradlew publish -Pthirdparty
         working-directory: combiner
         env:
-          MAVEN_PUBLISH_URL: https://maven.photonvision.org/snapshots
-          MAVEN_PUBLISH_USERNAME: ghactions
-          MAVEN_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_API_KEY }}
+          ARTIFACTORY_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
       - name: Combine (Release)
         if: |
-          github.repository_owner == 'PhotonVision' &&
+          github.repository_owner == 'wpilibsuite' &&
           startsWith(github.ref, 'refs/tags/v')
         run: ./gradlew publish -Pthirdparty -Prelease
         env:
-          MAVEN_PUBLISH_URL: https://maven.photonvision.org/releases
-          MAVEN_PUBLISH_USERNAME: ghactions
-          MAVEN_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_API_KEY }}
+          ARTIFACTORY_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+          ARTIFACTORY_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
         working-directory: combiner
       - uses: actions/upload-artifact@v4
         with:
