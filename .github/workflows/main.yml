@@ -116,7 +116,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: photonvision/build-tools
+          repository: wpilibsuite/build-tools
       - uses: actions/download-artifact@v4
         with:
           path: combiner/products/build/allOutputs
@@ -124,22 +124,20 @@ jobs:
         run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
       - name: Combine
         if: |
-          github.repository_owner == 'PhotonVision' &&
+          github.repository_owner == 'wpilibsuite' &&
           !startsWith(github.ref, 'refs/tags/v')
         run: ./gradlew publish -Pthirdparty
         working-directory: combiner
         env:
-          MAVEN_PUBLISH_URL: https://maven.photonvision.org/snapshots
-          MAVEN_PUBLISH_USERNAME: ghactions
+          MAVEN_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           MAVEN_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_API_KEY }}
       - name: Combine (Release)
         if: |
-          github.repository_owner == 'PhotonVision' &&
+          github.repository_owner == 'wpilibsuite' &&
           startsWith(github.ref, 'refs/tags/v')
         run: ./gradlew publish -Pthirdparty -Prelease
         env:
-          MAVEN_PUBLISH_URL: https://maven.photonvision.org/releases
-          MAVEN_PUBLISH_USERNAME: ghactions
+          MAVEN_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           MAVEN_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_API_KEY }}
         working-directory: combiner
       - uses: actions/upload-artifact@v4
