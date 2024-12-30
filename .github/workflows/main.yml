@@ -130,7 +130,7 @@ jobs:
         working-directory: combiner
         env:
           MAVEN_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-          MAVEN_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_API_KEY }}
+          MAVEN_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
       - name: Combine (Release)
         if: |
           github.repository_owner == 'wpilibsuite' &&
