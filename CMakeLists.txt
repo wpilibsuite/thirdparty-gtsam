@@ -23,6 +23,6 @@ include(FetchContent)
 fetchcontent_declare(
     gtsam
     GIT_REPOSITORY    https://github.com/mcm001/gtsam
-    GIT_TAG           be53d3c8c1eb6c0e7048ae5a98918399a979f6fe
+    GIT_TAG           c24ca7951f1db4cfe4e23f368b2eda503de72176
 )
 fetchcontent_makeavailable(gtsam)
