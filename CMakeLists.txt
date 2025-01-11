@@ -17,27 +17,9 @@ fetchcontent_declare(
     GIT_REPOSITORY    https://gitlab.com/libeigen/eigen.git
     GIT_TAG           0fb2ed140d4fc0108553ecfb25f2d7fc1a9319a1
     GIT_PROGRESS TRUE
+    OVERRIDE_FIND_PACKAGE
 )
-FetchContent_GetProperties(Eigen3)
 
-if(NOT Eigen3_POPULATED)
-    FetchContent_Populate(Eigen3)
-
-    # Create a build directory for Eigen
-    set(eigen3_BUILD_DIR ${CMAKE_BINARY_DIR}/eigen3-build)
-    message("Eigen source is ${eigen3_SOURCE_DIR}, build is ${eigen3_BUILD_DIR}")
-    file(MAKE_DIRECTORY ${eigen3_BUILD_DIR})
-
-    # Configure Eigen
-    message("Hi configure - ${CMAKE_COMMAND} -S ${eigen3_SOURCE_DIR} -B ${eigen3_BUILD_DIR} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/eigen-install")
-    execute_process(COMMAND ${CMAKE_COMMAND} -S ${eigen3_SOURCE_DIR} -B ${eigen3_BUILD_DIR} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/eigen-install)
-
-    # Build and install Eigen
-    execute_process(COMMAND ${CMAKE_COMMAND} --build ${EIGEN_BUILD_DIR} --target install)
-endif()
-
-# Set Eigen3_DIR to the installation location
-set(Eigen3_DIR ${CMAKE_BINARY_DIR}/eigen-install/share/eigen3/cmake)
 
 set(GTSAM_COMPILE_OPTIONS_PRIVATE_DEBUG CACHE INTERNAL FORCE)
 set(GTSAM_COMPILE_OPTIONS_PRIVATE_RELWITHDEBINFO CACHE INTERNAL FORCE)
