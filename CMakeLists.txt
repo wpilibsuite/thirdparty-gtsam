@@ -33,9 +33,7 @@ if(NOT Eigen3_POPULATED)
     execute_process(COMMAND ${CMAKE_COMMAND} -S ${eigen3_SOURCE_DIR} -B ${eigen3_BUILD_DIR} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/eigen-install)
 
     # Build and install Eigen
-    message("Hi install")
     execute_process(COMMAND ${CMAKE_COMMAND} --build ${EIGEN_BUILD_DIR} --target install)
-    message("bye install")
 endif()
 
 # Set Eigen3_DIR to the installation location
