@@ -39,8 +39,8 @@ set(GTSAM_USE_SYSTEM_EIGEN ON)
 set(gtsam_patch git apply ${CMAKE_SOURCE_DIR}/patches/add-cassert.patch)
 fetchcontent_declare(
     gtsam
-    GIT_REPOSITORY    https://github.com/calcmogul/gtsam
-    GIT_TAG           79960095b9d8e03dd9ee83d7e0c9cab810a05a72
+    GIT_REPOSITORY    https://github.com/borglab/gtsam
+    GIT_TAG           49c67d38196fcceb98c328d7074b26c6a04a49c9
     GIT_PROGRESS TRUE
     PATCH_COMMAND ${gtsam_patch}
     UPDATE_DISCONNECTED 1
