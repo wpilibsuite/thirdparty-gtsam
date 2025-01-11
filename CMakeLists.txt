@@ -18,6 +18,7 @@ fetchcontent_declare(
     GIT_REPOSITORY    https://gitlab.com/libeigen/eigen.git
     GIT_TAG           0fb2ed140d4fc0108553ecfb25f2d7fc1a9319a1
     GIT_PROGRESS TRUE
+    SYSTEM
     OVERRIDE_FIND_PACKAGE
 )
 
