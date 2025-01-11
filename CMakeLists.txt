@@ -12,6 +12,7 @@ include(FetchContent)
 # Fetch Eigen
 set(EIGEN_BUILD_BLAS OFF)
 set(EIGEN_BUILD_LAPACK OFF)
+set(EIGEN_BUILD_CMAKE_PACKAGE ON)
 fetchcontent_declare(
     Eigen3
     GIT_REPOSITORY    https://gitlab.com/libeigen/eigen.git
