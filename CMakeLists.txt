@@ -45,17 +45,20 @@ set(GTSAM_ENABLE_BOOST_SERIALIZATION OFF)
 set(GTSAM_WITH_TBB OFF)
 set(GTSAM_USE_BOOST_FEATURES OFF)
 set(GTSAM_BUILD_PYTHON OFF)
-set(GTSAM_BUILD_EXAMPLES_ALWAYS OFF)
-set(GTSAM_BUILD_TESTS OFF)
+set(GTSAM_BUILD_EXAMPLES_ALWAYS ON)
+set(GTSAM_BUILD_TESTS ON)
 set(BUILD_SHARED_LIBS OFF)
 set(GTSAM_FORCE_SHARED_LIB OFF)
 set(GTSAM_FORCE_STATIC_LIB ON)
 set(GTSAM_USE_SYSTEM_EIGEN ON)
 
+set(gtsam_patch git apply ${CMAKE_SOURCE_DIR}/patches/add-cassert.patch)
 fetchcontent_declare(
     gtsam
     GIT_REPOSITORY    https://github.com/calcmogul/gtsam
     GIT_TAG           79960095b9d8e03dd9ee83d7e0c9cab810a05a72
     GIT_PROGRESS TRUE
+    PATCH_COMMAND ${gtsam_patch}
+    UPDATE_DISCONNECTED 1
 )
 fetchcontent_makeavailable(gtsam)
