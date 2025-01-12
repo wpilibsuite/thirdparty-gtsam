@@ -17,12 +17,12 @@ fetchcontent_declare(
     Eigen3
     GIT_REPOSITORY    https://gitlab.com/libeigen/eigen.git
     GIT_TAG           0fb2ed140d4fc0108553ecfb25f2d7fc1a9319a1
-    GIT_PROGRESS TRUE
-    SYSTEM
-    OVERRIDE_FIND_PACKAGE
+    SYSTEM # Ignore warnings
+    # Make gtsam pick up this Eigen as our system Eigen
+    OVERRIDE_FIND_PACKAGE 
 )
 
-
+# And build GTSAM
 set(GTSAM_COMPILE_OPTIONS_PRIVATE_DEBUG CACHE INTERNAL FORCE)
 set(GTSAM_COMPILE_OPTIONS_PRIVATE_RELWITHDEBINFO CACHE INTERNAL FORCE)
 set(GTSAM_ENABLE_BOOST_SERIALIZATION OFF)
@@ -40,7 +40,5 @@ fetchcontent_declare(
     gtsam
     GIT_REPOSITORY    https://github.com/borglab/gtsam
     GIT_TAG           49c67d38196fcceb98c328d7074b26c6a04a49c9
-    GIT_PROGRESS TRUE
-    UPDATE_DISCONNECTED 1
 )
 fetchcontent_makeavailable(gtsam)
