@@ -7,6 +7,22 @@ set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT Embedded)
 project(thirdparty-gtsam)
 
+include(FetchContent)
+
+# Fetch Eigen
+set(EIGEN_BUILD_BLAS OFF)
+set(EIGEN_BUILD_LAPACK OFF)
+set(EIGEN_BUILD_CMAKE_PACKAGE ON)
+fetchcontent_declare(
+    Eigen3
+    GIT_REPOSITORY    https://gitlab.com/libeigen/eigen.git
+    GIT_TAG           0fb2ed140d4fc0108553ecfb25f2d7fc1a9319a1
+    SYSTEM # Ignore warnings
+    # Make gtsam pick up this Eigen as our system Eigen
+    OVERRIDE_FIND_PACKAGE 
+)
+
+# And build GTSAM
 set(GTSAM_COMPILE_OPTIONS_PRIVATE_DEBUG CACHE INTERNAL FORCE)
 set(GTSAM_COMPILE_OPTIONS_PRIVATE_RELWITHDEBINFO CACHE INTERNAL FORCE)
 set(GTSAM_ENABLE_BOOST_SERIALIZATION OFF)
@@ -18,11 +34,11 @@ set(GTSAM_BUILD_TESTS OFF)
 set(BUILD_SHARED_LIBS OFF)
 set(GTSAM_FORCE_SHARED_LIB OFF)
 set(GTSAM_FORCE_STATIC_LIB ON)
+set(GTSAM_USE_SYSTEM_EIGEN ON)
 
-include(FetchContent)
 fetchcontent_declare(
     gtsam
-    GIT_REPOSITORY    https://github.com/mcm001/gtsam
-    GIT_TAG           c24ca7951f1db4cfe4e23f368b2eda503de72176
+    GIT_REPOSITORY    https://github.com/borglab/gtsam
+    GIT_TAG           49c67d38196fcceb98c328d7074b26c6a04a49c9
 )
 fetchcontent_makeavailable(gtsam)
