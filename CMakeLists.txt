@@ -36,13 +36,11 @@ set(GTSAM_FORCE_SHARED_LIB OFF)
 set(GTSAM_FORCE_STATIC_LIB ON)
 set(GTSAM_USE_SYSTEM_EIGEN ON)
 
-set(gtsam_patch git apply ${CMAKE_SOURCE_DIR}/patches/add-cassert.patch)
 fetchcontent_declare(
     gtsam
     GIT_REPOSITORY    https://github.com/borglab/gtsam
     GIT_TAG           49c67d38196fcceb98c328d7074b26c6a04a49c9
     GIT_PROGRESS TRUE
-    PATCH_COMMAND ${gtsam_patch}
     UPDATE_DISCONNECTED 1
 )
 fetchcontent_makeavailable(gtsam)
