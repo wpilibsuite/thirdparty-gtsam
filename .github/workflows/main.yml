@@ -40,7 +40,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y ninja-build build-essential intel-tbb-2021.5-1.738
+          sudo apt-get install -y ninja-build build-essential libtbb-dev
       - name: Install sccache
         uses: mozilla-actions/sccache-action@v0.0.5
       - name: Build with Gradle
