@@ -38,6 +38,6 @@ set(GTSAM_USE_SYSTEM_EIGEN ON)
 fetchcontent_declare(
     gtsam
     GIT_REPOSITORY    https://github.com/borglab/gtsam
-    GIT_TAG           d5f304ef50d65b89257dddd471df22a9b10c9e23
+    GIT_TAG           42cc0ac922460d506a7bbf3a37a4a0b1e103b79e
 )
 fetchcontent_makeavailable(gtsam)

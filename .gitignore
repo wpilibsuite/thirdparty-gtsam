@@ -1,4 +1,5 @@
-/build*
+!*.gradle
+build*/
 /install*
 /.gradle
 /gradleDir
