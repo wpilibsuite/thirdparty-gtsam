@@ -31,10 +31,10 @@ set(GTSAM_BUILD_PYTHON OFF)
 set(GTSAM_BUILD_EXAMPLES_ALWAYS OFF)
 set(GTSAM_BUILD_TESTS OFF)
 set(BUILD_SHARED_LIBS OFF)
-set(GTSAM_FORCE_SHARED_LIB OFF)
-set(GTSAM_FORCE_STATIC_LIB ON)
 set(GTSAM_USE_SYSTEM_EIGEN ON)
-
+if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-use-after-free")
+endif()
 fetchcontent_declare(
     gtsam
     GIT_REPOSITORY    https://github.com/borglab/gtsam
