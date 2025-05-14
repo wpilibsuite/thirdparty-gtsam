@@ -42,6 +42,8 @@ def getPlatform() {
 def getPlatformPath(platform) {
     if (platform == "linux-athena") {
         return "linux/athena"
+    } else if (platform == "linux-systemcore") {
+        return "linux/systemcore"
     } else if (platform == "linux-arm32") {
         return "linux/arm32"
     } else if (platform == "linux-arm64") {

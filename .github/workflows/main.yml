@@ -6,9 +6,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
-env:
-  SCCACHE_WEBDAV_ENDPOINT: "https://frcmaven.wpi.edu/artifactory/wpilib-generic-cache-cmake"
-
 jobs:
   build-docker:
     strategy:
@@ -17,16 +14,19 @@ jobs:
         include:
           - container: wpilib/roborio-cross-ubuntu:2025-22.04
             artifact-name: Athena
-            build-options: -Pplatform=linux-athena -Psccache -Ptoolchain=/usr/local/toolchain-config.cmake
+            build-options: -Pplatform=linux-athena -Ptoolchain=/usr/local/toolchain-config.cmake
+          - container: wpilib/systemcore-cross-ubuntu:2025-22.04
+            artifact-name: SystemCore
+            build-options: -Pplatform=linux-systemcore -Ptoolchain=/usr/local/toolchain-config.cmake
           - container: wpilib/raspbian-cross-ubuntu:bookworm-22.04
             artifact-name: Arm32
-            build-options: -Pplatform=linux-arm32 -Psccache -Ptoolchain=/usr/local/toolchain-config.cmake
+            build-options: -Pplatform=linux-arm32 -Ptoolchain=/usr/local/toolchain-config.cmake
           - container: wpilib/aarch64-cross-ubuntu:bookworm-22.04
             artifact-name: Arm64
-            build-options: -Pplatform=linux-arm64 -Psccache -Ptoolchain=/usr/local/toolchain-config.cmake
+            build-options: -Pplatform=linux-arm64 -Ptoolchain=/usr/local/toolchain-config.cmake
           - container: wpilib/ubuntu-base:22.04
             artifact-name: Linux
-            build-options: -Pplatform=linux-x86_64 -Psccache
+            build-options: -Pplatform=linux-x86_64
 
     name: "Build - ${{ matrix.artifact-name }}"
     runs-on: ubuntu-latest
@@ -41,8 +41,6 @@ jobs:
         run: |
           sudo apt-get update -q
           sudo apt-get install -y ninja-build build-essential libtbb-dev
-      - name: Install sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
       - name: Build with Gradle
         run: ./gradlew publish ${{ matrix.build-options }}
         env:
@@ -60,10 +58,10 @@ jobs:
         include:
           - artifact-name: WinArm64
             tool-arch: amd64_arm64
-            build-options: -Pplatform=windows-arm64 -Psccache
+            build-options: -Pplatform=windows-arm64
           - artifact-name: Win64
             tool-arch: amd64
-            build-options: -Pplatform=windows-x86_64 -Psccache
+            build-options: -Pplatform=windows-x86_64
 
     name: "Build - ${{ matrix.artifact-name }}"
     runs-on: windows-2019
@@ -78,8 +76,6 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1.13.0
         with:
           arch: ${{ matrix.tool-arch }}
-      - name: Install sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
       - name: Build with Gradle
         run: ./gradlew publish ${{ matrix.build-options }}
         env:
@@ -103,10 +99,8 @@ jobs:
           distribution: 'temurin'
       - run: brew install cmake ninja
         name: install ninja
-      - name: Install sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
       - name: Build with Gradle
-        run: ./gradlew publish -Pplatform=osx-universal -Psccache
+        run: ./gradlew publish -Pplatform=osx-universal
         env:
           SCCACHE_WEBDAV_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           SCCACHE_WEBDAV_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
