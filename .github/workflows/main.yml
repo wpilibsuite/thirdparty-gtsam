@@ -18,18 +18,22 @@ jobs:
           - container: wpilib/roborio-cross-ubuntu:2025-22.04
             artifact-name: Athena
             build-options: -Pplatform=linux-athena -Psccache -Ptoolchain=/usr/local/toolchain-config.cmake
+            runner: ubuntu-latest
           - container: wpilib/raspbian-cross-ubuntu:bookworm-22.04
             artifact-name: Arm32
             build-options: -Pplatform=linux-arm32 -Psccache -Ptoolchain=/usr/local/toolchain-config.cmake
+            runner: ubuntu-latest-arm
           - container: wpilib/aarch64-cross-ubuntu:bookworm-22.04
             artifact-name: Arm64
             build-options: -Pplatform=linux-arm64 -Psccache -Ptoolchain=/usr/local/toolchain-config.cmake
+            runner: ubuntu-latest-arm
           - container: wpilib/ubuntu-base:22.04
             artifact-name: Linux
             build-options: -Pplatform=linux-x86_64 -Psccache
+            runner: ubuntu-latest
 
     name: "Build - ${{ matrix.artifact-name }}"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v4
