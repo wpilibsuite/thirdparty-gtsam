@@ -12,19 +12,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/roborio-cross-ubuntu:2025-22.04
-            artifact-name: Athena
-            build-options: -Pplatform=linux-athena -Ptoolchain=/usr/local/toolchain-config.cmake
-          - container: wpilib/systemcore-cross-ubuntu:2025-22.04
+          - container: wpilib/systemcore-cross-debian:trixie
             artifact-name: SystemCore
             build-options: -Pplatform=linux-systemcore -Ptoolchain=/usr/local/toolchain-config.cmake
-          - container: wpilib/raspbian-cross-ubuntu:bookworm-22.04
-            artifact-name: Arm32
-            build-options: -Pplatform=linux-arm32 -Ptoolchain=/usr/local/toolchain-config.cmake
-          - container: wpilib/aarch64-cross-ubuntu:bookworm-22.04
+          - container: wpilib/aarch64-cross-debian:trixie
             artifact-name: Arm64
             build-options: -Pplatform=linux-arm64 -Ptoolchain=/usr/local/toolchain-config.cmake
-          - container: wpilib/ubuntu-base:22.04
+          - container: wpilib/debian-base:trixie
             artifact-name: Linux
             build-options: -Pplatform=linux-x86_64
 
@@ -32,8 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: 'temurin'
@@ -46,7 +40,7 @@ jobs:
         env:
           SCCACHE_WEBDAV_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           SCCACHE_WEBDAV_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact-name }}
           path: gradleDir/outputs/
@@ -64,12 +58,12 @@ jobs:
             build-options: -Pplatform=windows-x86_64
 
     name: "Build - ${{ matrix.artifact-name }}"
-    runs-on: windows-2019
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: 'true'
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: 'temurin'
@@ -81,19 +75,19 @@ jobs:
         env:
           SCCACHE_WEBDAV_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           SCCACHE_WEBDAV_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact-name }}
           path: gradleDir/outputs/
 
   build-mac:
     name: "Build - macOS"
-    runs-on: macOS-14
+    runs-on: macOS-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: 'true'
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: 'temurin'
@@ -104,7 +98,7 @@ jobs:
         env:
           SCCACHE_WEBDAV_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           SCCACHE_WEBDAV_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: macOS
           path: gradleDir/outputs/
@@ -114,10 +108,10 @@ jobs:
     needs: [build-docker, build-windows, build-mac]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: wpilibsuite/build-tools
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: combiner/products/build/allOutputs
       - name: Flatten Artifacts
@@ -138,7 +132,7 @@ jobs:
           ARTIFACTORY_PUBLISH_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
           ARTIFACTORY_PUBLISH_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
         working-directory: combiner
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Maven
           path: ~/releases
