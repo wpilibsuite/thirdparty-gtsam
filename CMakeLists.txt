@@ -33,9 +33,8 @@ set(GTSAM_BUILD_TESTS OFF)
 set(BUILD_SHARED_LIBS OFF)
 set(GTSAM_USE_SYSTEM_EIGEN ON)
 if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-use-after-free")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-use-after-free -Wno-error=maybe-uninitialized")
 endif()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=maybe-uninitialized")
 
 fetchcontent_declare(
     gtsam
