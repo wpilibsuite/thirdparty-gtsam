@@ -68,7 +68,7 @@ if (!project.hasProperty('platform')) {
 ext.platformPath = getPlatformPath(project.platform)
 def outputClassifierStatic = ext.platformPath.replaceFirst('/', '') + 'static'
 
-def pubVersion = "4.3-5dev"
+def pubVersion = "4.3-5"
 
 def outputsFolder = file("$project.buildDir/outputs")
 
