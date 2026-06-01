@@ -16,7 +16,7 @@ set(EIGEN_BUILD_CMAKE_PACKAGE ON)
 fetchcontent_declare(
     Eigen3
     GIT_REPOSITORY    https://gitlab.com/libeigen/eigen.git
-    GIT_TAG           0fb2ed140d4fc0108553ecfb25f2d7fc1a9319a1
+    GIT_TAG           bc3b39870ecb690a623a3f49149a358b95c5781d
     SYSTEM # Ignore warnings
     # Make gtsam pick up this Eigen as our system Eigen
     OVERRIDE_FIND_PACKAGE
@@ -35,9 +35,10 @@ set(GTSAM_USE_SYSTEM_EIGEN ON)
 if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-use-after-free")
 endif()
+set(GTSAM_BUILD_UNSTABLE OFF)
 fetchcontent_declare(
     gtsam
     GIT_REPOSITORY    https://github.com/borglab/gtsam
-    GIT_TAG           42cc0ac922460d506a7bbf3a37a4a0b1e103b79e
+    GIT_TAG           fc790b0916a81a56077fc197ad8259d5efa63972
 )
 fetchcontent_makeavailable(gtsam)
