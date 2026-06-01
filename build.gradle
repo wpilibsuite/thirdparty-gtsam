@@ -68,13 +68,13 @@ if (!project.hasProperty('platform')) {
 ext.platformPath = getPlatformPath(project.platform)
 def outputClassifierStatic = ext.platformPath.replaceFirst('/', '') + 'static'
 
-def pubVersion = "4.3-5"
+def pubVersion = "2027-4.3-5"
 
 def outputsFolder = file("$project.buildDir/outputs")
 
 def baseArtifactId = 'gtsam'
-def artifactGroupId = 'org.wpilib.thirdparty.frc2027.gtsam'
-def zipBaseName = '_GROUP_org_wpilib_thirdparty_frc2027_gtsam_ID_gtsam-cpp_CLS'
+def artifactGroupId = 'org.wpilib.thirdparty.gtsam'
+def zipBaseName = '_GROUP_org_wpilib_thirdparty_gtsam_ID_gtsam-cpp_CLS'
 
 def versionFile = file("$outputsFolder/version.txt")
 def licenseFile = file("LICENSE.md")
