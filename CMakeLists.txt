@@ -16,7 +16,7 @@ set(EIGEN_BUILD_CMAKE_PACKAGE ON)
 fetchcontent_declare(
     Eigen3
     GIT_REPOSITORY    https://gitlab.com/libeigen/eigen.git
-    GIT_TAG           bc3b39870ecb690a623a3f49149a358b95c5781d
+    GIT_TAG           bc3b39870ecb690a623a3f49149a358b95c5781d # This is the latest release of Eigen, 5.0.1
     SYSTEM # Ignore warnings
     # Make gtsam pick up this Eigen as our system Eigen
     OVERRIDE_FIND_PACKAGE
@@ -35,6 +35,10 @@ set(GTSAM_USE_SYSTEM_EIGEN ON)
 if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-use-after-free")
 endif()
+
+# Disabled unstable features. This is the latest development commit as of 2026-06-01, and some unstable features break
+# The latest release (4.3a1) wouldn't build while I was testing, and we'd have to patch it to get it working
+# While the thing that made it not build was fixed in the latest development commit, it seems safer to just disable unstable features for now
 set(GTSAM_BUILD_UNSTABLE OFF)
 fetchcontent_declare(
     gtsam
