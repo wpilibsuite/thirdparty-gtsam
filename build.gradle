@@ -159,15 +159,17 @@ task cppHeadersZip(type: Zip) {
     archiveBaseName = zipBaseName
     archiveClassifier = "headers"
 
-    def license = Paths.get(projectDir.canonicalPath).resolve("buildDebug").resolve("_deps").resolve("gtsam-src")
-    from(license.toFile()) {
+    from('buildDebug/_deps/gtsam-src') {
         into '/'
         include 'LICENSE*'
     }
-    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("installDebug").resolve("include")
-    from(resolvedDir.toFile()) {
+    from('buildDebug/_deps/gtsam-src/gtsam/3rdparty/Spectra') {
+        into '/Spectra'
+    }
+    from('installDebug/include/') {
         into '/'
         include '**/*.hpp', '**/*.h'
+        exclude 'eigen3/'
     }
 
     includeEmptyDirs = false
@@ -180,15 +182,10 @@ task cppSourcesZip(type: Zip) {
     archiveBaseName = zipBaseName
     archiveClassifier = "sources"
 
-    def license = Paths.get(projectDir.canonicalPath).resolve("buildDebug").resolve("_deps").resolve("gtsam-src")
-    from(license.toFile()) {
+    from('buildDebug/_deps/gtsam-src') {
         into '/'
-        include 'LICENSE*'
-    }
-    def resolvedDir = Paths.get(projectDir.canonicalPath).resolve("installDebug").resolve("include")
-    from(resolvedDir.toFile()) {
-        into '/'
-        include '**/*.hpp', '**/*.h'
+        include 'LICENSE*', 'gtsam/**/*.cpp', 'gtsam_unstable/**/*.cpp', 'gtsam/3rdparty/CCOLAMD/Source/ccolamd.c', 'gtsam/3rdparty/cephes/cephes/*.c', 'gtsam/3rdparty/metis/GKlib/*.c', 'gtsam/3rdparty/metis/libmetis/*.c', 'gtsam/3rdparty/SuiteSparse_config/*.c'
+        exclude '**/tests/**', 'gtsam/3rdparty/Eigen/', 'gtsam_unstable/timing/'
     }
 
     includeEmptyDirs = false
@@ -206,10 +203,13 @@ model {
     publishing {
         publications {
             cpp(MavenPublication) {
-                artifact cppHeadersZip
                 artifact cppLibsZipStaticRelWithDebInfo
                 artifact cppLibsZipStaticDebug
-                artifact cppSourcesZip
+                // In CI, only zip if it's Linux x86_64 to save time
+                if (System.getenv("GITHUB_ACTIONS") == null || platformPath.startsWith("linux/x86-64")) {
+                    artifact cppHeadersZip
+                    artifact cppSourcesZip
+                }
                 artifactId = "${baseArtifactId}-cpp"
                 groupId artifactGroupId
                 version pubVersion
