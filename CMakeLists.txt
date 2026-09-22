@@ -40,6 +40,6 @@ endif()
 fetchcontent_declare(
     gtsam
     GIT_REPOSITORY    https://github.com/borglab/gtsam
-    GIT_TAG           fc790b0916a81a56077fc197ad8259d5efa63972
+    GIT_TAG           71a25ca36c084cbad1f872e812d6d97fbadfdb05 # 4.3.0
 )
 fetchcontent_makeavailable(gtsam)
