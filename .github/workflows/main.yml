@@ -7,6 +7,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  validation:
+    name: "Validation"
+    runs-on: ${{ case(github.repository_owner == 'wpilibsuite', 'blacksmith-2vcpu-ubuntu-2404', 'ubuntu-24.04') }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: gradle/actions/wrapper-validation@v6
   build-docker:
     strategy:
       fail-fast: false
@@ -24,6 +30,7 @@ jobs:
 
     name: "Build - ${{ matrix.artifact-name }}"
     runs-on: ${{ case(github.repository_owner == 'wpilibsuite', 'blacksmith-32vcpu-ubuntu-2404', 'ubuntu-24.04') }}
+    needs: [validation]
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v7
@@ -59,6 +66,7 @@ jobs:
 
     name: "Build - ${{ matrix.artifact-name }}"
     runs-on: ${{ case(github.repository_owner == 'wpilibsuite', 'blacksmith-32vcpu-windows-2025', 'windows-2025') }}
+    needs: [validation]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -83,6 +91,7 @@ jobs:
   build-mac:
     name: "Build - macOS"
     runs-on: ${{ case(github.repository_owner == 'wpilibsuite', 'blacksmith-12vcpu-macos-15', 'macOS-15') }}
+    needs: [validation]
     steps:
       - uses: actions/checkout@v7
         with:
